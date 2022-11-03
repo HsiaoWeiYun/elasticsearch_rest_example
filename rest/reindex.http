@@ -1,0 +1,131 @@
+### 1. 先確認預計執行reindex的index是否有加上alias
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cat/aliases
+
+### 2. 若無則先建立alais
+POST http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_aliases
+Content-Type: application/json
+
+{
+  "actions": [
+    {
+      "add": {
+        "index": "vs_game_order",
+        "alias": "vs_game_order_alias"
+      }
+    }
+  ]
+}
+
+### 3. 建立與其對應的新index
+PUT http://{{acct}}:{{passWD}}@{{host}}:{{port}}/vs_game_order_tmp
+Content-Type: application/json
+
+{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "mer_order_id": {
+        "type": "keyword"
+      },
+      "user_id": {
+        "type": "keyword"
+      },
+      "parent_name": {
+        "type": "keyword"
+      },
+      "vip_id": {
+        "type": "integer"
+      },
+      "vip": {
+        "type": "keyword"
+      },
+      "channel_code": {
+        "type": "keyword"
+      },
+      "game_code": {
+        "type": "keyword"
+      },
+      "mer_username": {
+        "type": "keyword"
+      },
+      "game_type": {
+        "type": "integer"
+      },
+      "bet_time": {
+        "type": "date",
+        "format": "date_time"
+      },
+      "payout_time": {
+        "type": "date",
+        "format": "date_time"
+      },
+      "bet_amount": {
+        "type": "double"
+      },
+      "valid_bet_amount": {
+        "type": "double"
+      },
+      "payout_amount": {
+        "type": "double"
+      },
+      "profit": {
+        "type": "double"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "bet_log": {
+        "type": "text",
+        "index": false
+      },
+      "mer_time_zone": {
+        "type": "integer",
+        "index": false
+      },
+      "create_time": {
+        "type": "date",
+        "format": "date_time"
+      }
+    }
+  }
+}
+
+### 4. reindex
+### wait_for_completion=false, 異步, 另外呼叫task api 查看進度
+### slices=2, 分兩段平行處理
+POST http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_reindex?slices=2&wait_for_completion=false
+Content-Type: application/json
+
+{
+  "source": {
+    "index": "vs_game_order"
+  },
+  "dest": {
+    "index": "vs_game_order_tmp",
+    "op_type": "index"
+  }
+}
+
+### task api, 提供task id 查看進度
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_tasks/$taskId
+
+### 5. alias 重新指向 (原子)
+POST http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_aliases
+Content-Type: application/json
+
+{
+  "actions": [
+    {
+      "add": {
+        "index": "vs_game_order_tmp",
+        "alias": "alias_vs_game_order"
+      }
+    },
+    {
+      "remove": {
+        "index": "vs_game_order",
+        "alias": "alias_vs_game_order"
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+### https://www.elastic.co/guide/en/elasticsearch/reference/7.17/rest-apis.html
+
+### 檢查集群健康狀態
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cluster/health
+
+### 檢查集群各項指標
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cluster/state
+
+### 集群數據統計
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cluster/stats?human&pretty
+
+### 節點數據統計
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_nodes/stats
+
+### 節點指標
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_nodes
+
+### 檢查集群健康狀態
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cat/health?v=true&ts=true
+
+### 檢查index健康狀態
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cat/indices?v=true
+
+### 列出index健康狀態說明
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cat/indices?help=true
+
+### 列出集群設定
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cluster/settings?include_defaults=true
+
+### 集群分配解釋api, 目的是為集群分片提供解釋, 未分配有未分配的原因, 已分配解釋為何分配而非平衡或移動到另節點上, 找原因時可用
+GET http://{{acct}}:{{passWD}}@{{host}}:{{port}}/_cluster/allocation/explain?include_disk_info=true&include_yes_decisions=true
+Content-Type: application/json
+
+{
+  "index": "vs_game_order",
+  "shard": 0,
+  "primary": true
+}
